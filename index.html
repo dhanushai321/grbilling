@@ -641,16 +641,10 @@
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span>Saved</span></div>
 
 <script>
-/* ============================================================
-   SUPABASE CONFIG
-   ============================================================ */
 const SUPABASE_URL = 'https://naafnqbfarspbmhdjnkn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hYWZucWJmYXJzcGJtaGRqbmtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMjg3MDMsImV4cCI6MjEwNTkwNDcwM30.fIqqUeCN45xe9KzZunEtrsMCHSEC6voKWz3VKnQZqsI';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ============================================================
-   DB LAYER — Supabase (Shared Store)
-   ============================================================ */
 const DB = {
   _data: {
     products: [], customers: [], invoices: [], users: [], stockHistory: [],
@@ -808,9 +802,6 @@ const DB = {
   async logout() { await supabase.auth.signOut(); }
 };
 
-/* ============================================================
-   STATE
-   ============================================================ */
 const state = {
   user: null,
   currentView: 'dashboard',
@@ -821,9 +812,6 @@ const state = {
   lastReceipt: null
 };
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const fmt = n => DB._data.settings.currency + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
@@ -860,9 +848,6 @@ $('#btnConfirmYes').addEventListener('click', ()=>{
   closeModal('modalConfirm');
 });
 
-/* ============================================================
-   AUTH
-   ============================================================ */
 $('#btnLogin').addEventListener('click', doLogin);
 $('#inPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 $('#inUser').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#inPass').focus(); });
@@ -937,9 +922,6 @@ function initApp(){
   switchView('dashboard');
 }
 
-/* ============================================================
-   NAVIGATION
-   ============================================================ */
 $$('.sb-item[data-v]').forEach(b=>{
   b.addEventListener('click', ()=>{
     $$('.sb-item[data-v]').forEach(x=>x.classList.remove('on'));
@@ -979,9 +961,6 @@ function switchView(v){
   if(v==='settings') renderSettings();
 }
 
-/* ============================================================
-   REFRESH
-   ============================================================ */
 function refreshAll(){
   const s = DB._data.settings;
   $('#sbStoreName').textContent = s.storeName;
@@ -997,9 +976,6 @@ function refreshAll(){
   renderPOS();
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
 function renderDashboard(){
   const d = DB._data;
   const td = today();
@@ -1084,9 +1060,6 @@ function renderDashboard(){
   }
 }
 
-/* ============================================================
-   PRODUCTS
-   ============================================================ */
 function populateCategorySelects(){
   const cats = DB._data.categories;
   $('#pCategory').innerHTML = cats.map(c=>`<option>${esc(c)}</option>`).join('');
@@ -1226,9 +1199,6 @@ window.deleteProduct = id=>{
   });
 };
 
-/* ============================================================
-   INVENTORY
-   ============================================================ */
 function renderInventory(){
   const d = DB._data;
   const active = d.products.filter(p=>p.status==='Active');
@@ -1349,9 +1319,6 @@ function defaultNote(t){
   return {in:'Stock In', out:'Stock Out', damage:'Damaged', return:'Returned'}[t] || 'Adjustment';
 }
 
-/* ============================================================
-   CUSTOMERS
-   ============================================================ */
 function renderCustomers(){
   const search = $('#cSearch').value.toLowerCase().trim();
   let list = DB._data.customers.slice();
@@ -1478,9 +1445,6 @@ function populateCustomerSelect(){
     DB._data.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile)}</option>`).join('');
 }
 
-/* ============================================================
-   POS
-   ============================================================ */
 function populateProductSelect(){
   const sel = $('#posQuick');
   const active = DB._data.products.filter(p=>p.status==='Active' && p.stock>0);
@@ -1679,9 +1643,6 @@ $('#btnPrintNow').addEventListener('click', ()=>{
   setTimeout(()=>{ w.print(); w.close(); }, 250);
 });
 
-/* ============================================================
-   INVOICES
-   ============================================================ */
 function renderInvoices(){
   const search = $('#invSearch').value.toLowerCase().trim();
   const from = $('#invFrom').value;
@@ -1842,9 +1803,6 @@ window.deleteInvoice = id=>{
   });
 };
 
-/* ============================================================
-   REPORTS
-   ============================================================ */
 let currentReport = 'sales';
 
 function runReport(type){
@@ -1965,9 +1923,6 @@ $('#btnPrintRep').addEventListener('click', ()=>{
   $('#repTo').value = to.toISOString().slice(0,10);
 })();
 
-/* ============================================================
-   SETTINGS
-   ============================================================ */
 function renderSettings(){
   const s = DB._data.settings;
   $('#setName').value = s.storeName;
@@ -2031,9 +1986,6 @@ $('#btnBackup').addEventListener('click', ()=>{
   toast('Backup downloaded');
 });
 
-/* ============================================================
-   GLOBAL SEARCH
-   ============================================================ */
 $('#globalSearch').addEventListener('keydown', e=>{
   if(e.key!=='Enter') return;
   const q = e.target.value.trim();
