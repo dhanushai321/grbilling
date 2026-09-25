@@ -6,6 +6,7 @@
 <title>GR Designs · Billing & Inventory</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -30,7 +31,6 @@
   tbody tr:hover{background:#f8fafc}
   tbody tr:last-child td{border-bottom:none}
 
-  /* ---------- LOGIN ---------- */
   .login-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#334155 100%);z-index:1000;padding:20px}
   .login-card{background:#fff;border-radius:20px;width:100%;max-width:420px;padding:40px 36px;box-shadow:var(--shadow-lg)}
   .login-brand{display:flex;align-items:center;gap:14px;margin-bottom:8px}
@@ -45,12 +45,12 @@
   .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-light)}
   .login-btn{width:100%;padding:13px;background:var(--primary);color:#fff;font-weight:600;border-radius:10px;transition:.15s;font-size:14px}
   .login-btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 8px 20px rgba(37,99,235,.3)}
+  .login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
   .login-err{background:#fef2f2;color:#b91c1c;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;border:1px solid #fecaca}
   .login-err.show{display:block}
   .login-hint{margin-top:22px;padding:12px;background:#f8fafc;border-radius:10px;font-size:12px;color:var(--text-2);border:1px dashed var(--border-2)}
   .login-hint b{color:var(--text);font-weight:600}
 
-  /* ---------- APP LAYOUT ---------- */
   .app{display:none;min-height:100vh}
   .app.on{display:flex}
   .sidebar{width:250px;background:var(--sidebar);color:#cbd5e1;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:50;overflow-y:auto;transition:transform .3s}
@@ -88,7 +88,6 @@
   .view.on{display:block;animation:fadeIn .2s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  /* ---------- COMPONENTS ---------- */
   .grid{display:grid;gap:16px}
   .grid-5{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
   .grid-4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
@@ -201,7 +200,6 @@
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
 <div class="login-wrap" id="loginWrap">
   <div class="login-card">
     <div class="login-brand">
@@ -218,26 +216,23 @@
     <div class="login-err" id="loginErr"><i class="fas fa-exclamation-circle"></i> <span id="loginErrMsg">Invalid credentials</span></div>
 
     <div class="field">
-      <label>Username</label>
-      <input type="text" id="inUser" placeholder="Enter username" autocomplete="username" />
+      <label>Email</label>
+      <input type="email" id="inUser" placeholder="Enter your email" autocomplete="email" />
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="inPass" placeholder="Enter password" autocomplete="current-password" />
+      <input type="password" id="inPass" placeholder="Enter your password" autocomplete="current-password" />
     </div>
 
     <button class="login-btn" id="btnLogin"><i class="fas fa-right-to-bracket"></i> Sign In</button>
 
     <div class="login-hint">
-      <b>Demo Accounts:</b><br>
-      Admin — <b>admin</b> / <b>admin123</b><br>
-      Manager — <b>manager</b> / <b>mgr123</b><br>
-      Cashier — <b>cashier</b> / <b>bill123</b>
+      <b>Staff Login:</b><br>
+      Use the email &amp; password issued by your administrator.
     </div>
   </div>
 </div>
 
-<!-- ================= APP ================= -->
 <div class="app" id="app">
   <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
@@ -291,41 +286,14 @@
     </header>
 
     <div class="page">
-      <!-- DASHBOARD -->
       <section class="view on" id="v-dashboard">
         <div class="grid grid-5" style="margin-bottom:20px">
-          <div class="stat">
-            <div class="ico" style="background:#eff6ff;color:#2563eb"><i class="fas fa-indian-rupee-sign"></i></div>
-            <div class="lbl">Today's Sales</div>
-            <div class="val" id="stSales">₹0</div>
-            <div class="sub" id="stSalesSub">0 invoices</div>
-          </div>
-          <div class="stat">
-            <div class="ico" style="background:#ecfdf5;color:#10b981"><i class="fas fa-wallet"></i></div>
-            <div class="lbl">Collections</div>
-            <div class="val" id="stCash">₹0</div>
-            <div class="sub" id="stCashSub">Cash: ₹0</div>
-          </div>
-          <div class="stat">
-            <div class="ico" style="background:#fef3c7;color:#d97706"><i class="fas fa-file-invoice-dollar"></i></div>
-            <div class="lbl">Outstanding</div>
-            <div class="val" id="stOut">₹0</div>
-            <div class="sub">Credit balance</div>
-          </div>
-          <div class="stat">
-            <div class="ico" style="background:#fef2f2;color:#ef4444"><i class="fas fa-triangle-exclamation"></i></div>
-            <div class="lbl">Low Stock</div>
-            <div class="val" id="stLow">0</div>
-            <div class="sub">items need reorder</div>
-          </div>
-          <div class="stat">
-            <div class="ico" style="background:#f3e8ff;color:#7c3aed"><i class="fas fa-tshirt"></i></div>
-            <div class="lbl">Products</div>
-            <div class="val" id="stProd">0</div>
-            <div class="sub">active SKUs</div>
-          </div>
+          <div class="stat"><div class="ico" style="background:#eff6ff;color:#2563eb"><i class="fas fa-indian-rupee-sign"></i></div><div class="lbl">Today's Sales</div><div class="val" id="stSales">₹0</div><div class="sub" id="stSalesSub">0 invoices</div></div>
+          <div class="stat"><div class="ico" style="background:#ecfdf5;color:#10b981"><i class="fas fa-wallet"></i></div><div class="lbl">Collections</div><div class="val" id="stCash">₹0</div><div class="sub" id="stCashSub">Cash: ₹0</div></div>
+          <div class="stat"><div class="ico" style="background:#fef3c7;color:#d97706"><i class="fas fa-file-invoice-dollar"></i></div><div class="lbl">Outstanding</div><div class="val" id="stOut">₹0</div><div class="sub">Credit balance</div></div>
+          <div class="stat"><div class="ico" style="background:#fef2f2;color:#ef4444"><i class="fas fa-triangle-exclamation"></i></div><div class="lbl">Low Stock</div><div class="val" id="stLow">0</div><div class="sub">items need reorder</div></div>
+          <div class="stat"><div class="ico" style="background:#f3e8ff;color:#7c3aed"><i class="fas fa-tshirt"></i></div><div class="lbl">Products</div><div class="val" id="stProd">0</div><div class="sub">active SKUs</div></div>
         </div>
-
         <div class="grid grid-2" style="margin-bottom:20px">
           <div class="card">
             <div class="card-h"><h3><i class="fas fa-chart-column"></i> Weekly Sales</h3><div class="sp"></div><span class="badge b-blue">Last 7 days</span></div>
@@ -336,7 +304,6 @@
             <div class="card-b" id="lowStockList"></div>
           </div>
         </div>
-
         <div class="grid grid-2">
           <div class="card">
             <div class="card-h"><h3><i class="fas fa-receipt"></i> Recent Invoices</h3><div class="sp"></div><span class="badge b-gray" id="invCount">0</span></div>
@@ -349,7 +316,6 @@
         </div>
       </section>
 
-      <!-- BILLING -->
       <section class="view" id="v-billing">
         <div class="pos">
           <div>
@@ -373,15 +339,12 @@
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-h"><h3><i class="fas fa-user"></i> Customer &amp; Payment</h3></div>
             <div class="card-b">
               <div class="field">
                 <label>Customer</label>
-                <select class="sel" id="posCustomer">
-                  <option value="">Walk-in Customer</option>
-                </select>
+                <select class="sel" id="posCustomer"><option value="">Walk-in Customer</option></select>
               </div>
               <div class="pos-sum">
                 <div class="pos-row"><span>Subtotal</span><span id="posSub">₹0</span></div>
@@ -412,7 +375,6 @@
         </div>
       </section>
 
-      <!-- PRODUCTS -->
       <section class="view" id="v-products">
         <div class="filters">
           <input type="text" class="input" id="pSearch" placeholder="Search by name, SKU, brand..." />
@@ -425,19 +387,13 @@
         <div class="card">
           <div class="tbl-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>Product</th><th>SKU</th><th>Category</th><th>Size/Color</th>
-                  <th>Purchase</th><th>Selling</th><th>GST%</th><th>Stock</th><th>Status</th><th style="text-align:right">Actions</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Size/Color</th><th>Purchase</th><th>Selling</th><th>GST%</th><th>Stock</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
               <tbody id="pTbody"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- INVENTORY -->
       <section class="view" id="v-inventory">
         <div class="grid grid-4" style="margin-bottom:20px">
           <div class="stat"><div class="ico" style="background:#eff6ff;color:#2563eb"><i class="fas fa-boxes-stacked"></i></div><div class="lbl">Total Stock</div><div class="val" id="invTotal">0</div></div>
@@ -490,7 +446,6 @@
         </div>
       </section>
 
-      <!-- CUSTOMERS -->
       <section class="view" id="v-customers">
         <div class="filters">
           <input type="text" class="input" id="cSearch" placeholder="Search by name, mobile, email..." />
@@ -507,7 +462,6 @@
         </div>
       </section>
 
-      <!-- INVOICES -->
       <section class="view" id="v-invoices">
         <div class="filters">
           <input type="text" class="input" id="invSearch" placeholder="Search by invoice no, customer..." />
@@ -525,7 +479,6 @@
         </div>
       </section>
 
-      <!-- REPORTS -->
       <section class="view" id="v-reports">
         <div class="tabs" id="repTabs">
           <button class="tab on" data-rt="sales">Sales</button>
@@ -547,7 +500,6 @@
         </div>
       </section>
 
-      <!-- SETTINGS -->
       <section class="view" id="v-settings">
         <div class="tabs" id="setTabs">
           <button class="tab on" data-st="store">Store</button>
@@ -577,12 +529,15 @@
         </div>
         <div class="tab-panel hide" id="tab-users">
           <div class="card">
-            <div class="card-h"><h3><i class="fas fa-users-gear"></i> User Accounts</h3><div class="sp"></div><button class="btn btn-p btn-s" id="btnAddU"><i class="fas fa-plus"></i> Add User</button></div>
+            <div class="card-h"><h3><i class="fas fa-users-gear"></i> User Accounts</h3><div class="sp"></div></div>
             <div class="tbl-wrap">
               <table>
-                <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+                <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th></tr></thead>
                 <tbody id="uTbody"></tbody>
               </table>
+            </div>
+            <div class="card-b" style="border-top:1px solid var(--border);color:var(--text-2);font-size:13px">
+              <i class="fas fa-info-circle"></i> New staff accounts are created by your administrator from the Supabase dashboard.
             </div>
           </div>
         </div>
@@ -596,19 +551,11 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-h"><h3><i class="fas fa-upload"></i> Restore From Backup</h3></div>
+              <div class="card-h"><h3><i class="fas fa-database"></i> Cloud Backup</h3></div>
               <div class="card-b">
-                <p style="color:var(--text-2);margin-bottom:14px;font-size:13px">Restore your store from a previously saved backup.</p>
-                <input type="file" id="restoreFile" accept=".json" style="margin-bottom:12px" />
-                <button class="btn btn-o" id="btnRestore"><i class="fas fa-upload"></i> Restore Data</button>
+                <p style="color:var(--text-2);margin-bottom:14px;font-size:13px">All data is automatically backed up daily by Supabase.</p>
+                <span class="badge b-green"><i class="fas fa-check"></i> Auto-backup enabled</span>
               </div>
-            </div>
-          </div>
-          <div class="card" style="margin-top:16px">
-            <div class="card-h"><h3><i class="fas fa-triangle-exclamation" style="color:var(--danger)"></i> Danger Zone</h3></div>
-            <div class="card-b">
-              <p style="color:var(--text-2);margin-bottom:14px;font-size:13px">Reset all store data. This cannot be undone.</p>
-              <button class="btn btn-d" id="btnResetAll"><i class="fas fa-trash"></i> Reset All Data</button>
             </div>
           </div>
         </div>
@@ -617,7 +564,6 @@
   </main>
 </div>
 
-<!-- MODALS -->
 <div class="modal" id="modalProduct"><div class="modal-box lg">
   <div class="modal-h"><h3 id="pModalTitle"><i class="fas fa-tshirt"></i> Add Product</h3><button class="x" data-close><i class="fas fa-times"></i></button></div>
   <div class="modal-b">
@@ -696,80 +642,183 @@
 
 <script>
 /* ============================================================
-   DB LAYER
+   SUPABASE CONFIG
    ============================================================ */
-const DEFAULT_CATEGORIES = ['Shirts','T-Shirts','Formal Shirts','Casual Shirts','Trousers','Jeans','Formal Pants','Shorts','Blazers','Suits','Jackets','Innerwear','Track Pants','Traditional Wear','Accessories','Other'];
+const SUPABASE_URL = 'https://naafnqbfarspbmhdjnkn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hYWZucWJmYXJzcGJtaGRqbmtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMjg3MDMsImV4cCI6MjEwNTkwNDcwM30.fIqqUeCN45xe9KzZunEtrsMCHSEC6voKWz3VKnQZqsI';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const DEFAULT_SETTINGS = {
-  storeName:'GR Designs', phone:'+91 98765 43210', gst:'27ABCDE1234F1Z5',
-  email:'store@grdesigns.com', address:'123 Fashion Street, Mumbai, MH 400001',
-  tax:5, currency:'₹', prefix:'INV-', terms:'Goods once sold will not be taken back. Thank you for shopping!'
-};
-
+/* ============================================================
+   DB LAYER — Supabase (Shared Store)
+   ============================================================ */
 const DB = {
-  key:'gr_designs_pos_v1',
-  _data:null,
-  load(){
-    try{
-      const raw = localStorage.getItem(this.key);
-      if(raw) this._data = JSON.parse(raw);
-    }catch(e){ console.warn('Load failed', e); }
-    if(!this._data){
-      this._data = this.seed();
-      this.save();
+  _data: {
+    products: [], customers: [], invoices: [], users: [], stockHistory: [],
+    settings: {
+      storeName:'GR Designs', phone:'', gst:'', email:'', address:'',
+      tax:5, currency:'₹', prefix:'INV-', terms:''
+    },
+    categories: ['Shirts','T-Shirts','Formal Shirts','Casual Shirts','Trousers','Jeans','Formal Pants','Shorts','Blazers','Suits','Jackets','Innerwear','Track Pants','Traditional Wear','Accessories','Other'],
+    invoiceCounter: 1
+  },
+
+  async load() {
+    try {
+      const [products, customers, invoices, stockHistory, settings, roles] = await Promise.all([
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase.from('customers').select('*').order('created_at', { ascending: false }),
+        supabase.from('invoices').select('*').order('created_at', { ascending: false }),
+        supabase.from('stock_history').select('*').order('created_at', { ascending: false }).limit(500),
+        supabase.from('store_settings').select('*').eq('id', 1).single(),
+        supabase.from('user_roles').select('*')
+      ]);
+
+      if (products.error) throw products.error;
+
+      this._data.products = (products.data || []).map(p => ({
+        id: p.id, name: p.name, sku: p.sku, barcode: p.barcode, category: p.category,
+        brand: p.brand, size: p.size, color: p.color,
+        purchase: Number(p.purchase), selling: Number(p.selling), mrp: Number(p.mrp),
+        tax: Number(p.tax), stock: p.stock, minStock: p.min_stock,
+        status: p.status, supplier: p.supplier, desc: p.description
+      }));
+
+      this._data.customers = (customers.data || []).map(c => ({
+        id: c.id, name: c.name, mobile: c.mobile, email: c.email,
+        address: c.address, gst: c.gst, createdAt: c.created_at
+      }));
+
+      this._data.invoices = (invoices.data || []).map(i => ({
+        id: i.invoice_no, uuid: i.id, date: i.date, time: i.time,
+        customerId: i.customer_id, customerName: i.customer_name,
+        items: i.items, subtotal: Number(i.subtotal), discount: Number(i.discount),
+        tax: Number(i.tax), total: Number(i.total), payment: i.payment,
+        paid: Number(i.paid), balance: Number(i.balance),
+        user: i.user_id, createdAt: i.created_at
+      }));
+
+      this._data.stockHistory = (stockHistory.data || []).map(s => ({
+        id: s.id, date: s.created_at, productId: s.product_id, name: s.name,
+        type: s.type, qty: s.qty, note: s.note, user: s.user_id
+      }));
+
+      this._data.users = (roles.data || []).map(r => ({
+        id: r.user_id, username: r.username, name: r.name, role: r.role, status: r.status
+      }));
+
+      if (settings.data) {
+        const s = settings.data;
+        this._data.settings = {
+          storeName: s.store_name || 'GR Designs',
+          phone: s.phone || '', gst: s.gst || '', email: s.email || '',
+          address: s.address || '', tax: Number(s.tax) || 5,
+          currency: s.currency || '₹', prefix: s.invoice_prefix || 'INV-',
+          terms: s.terms || ''
+        };
+      }
+
+      const maxInv = this._data.invoices.reduce((max, i) => {
+        const n = parseInt((i.id || '').replace(/\D/g, ''));
+        return n > max ? n : max;
+      }, 0);
+      this._data.invoiceCounter = maxInv + 1;
+
+      return { success: true };
+    } catch (e) {
+      console.error('Load error:', e);
+      return { success: false, error: e.message };
     }
   },
-  save(){
-    try{ localStorage.setItem(this.key, JSON.stringify(this._data)); }
-    catch(e){ console.warn('Save failed', e); }
+
+  save() {},
+
+  async addProduct(p) {
+    return await supabase.from('products').insert({
+      name: p.name, sku: p.sku, barcode: p.barcode, category: p.category,
+      brand: p.brand, size: p.size, color: p.color,
+      purchase: p.purchase, selling: p.selling, mrp: p.mrp, tax: p.tax,
+      stock: p.stock, min_stock: p.minStock, status: p.status,
+      supplier: p.supplier, description: p.desc
+    }).select().single();
   },
-  seed(){
-    const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
-    const dateStr = (dd)=>{ const dt=new Date(y,m,dd); return dt.toISOString().slice(0,10); };
-    const products = [
-      {id:'p1',name:'Formal Shirt',sku:'FS-001',barcode:'8901001',category:'Shirts',brand:'Arrow',size:'M',color:'Blue',purchase:800,selling:1299,mrp:1999,tax:5,stock:12,minStock:5,status:'Active',supplier:'Arrow Distributors',desc:'Premium cotton formal shirt'},
-      {id:'p2',name:'Formal Shirt',sku:'FS-002',barcode:'8901002',category:'Shirts',brand:'Arrow',size:'L',color:'Blue',purchase:800,selling:1299,mrp:1999,tax:5,stock:8,minStock:5,status:'Active',supplier:'Arrow Distributors',desc:''},
-      {id:'p3',name:'Casual T-Shirt',sku:'TS-101',barcode:'8901003',category:'T-Shirts',brand:'Levis',size:'M',color:'Black',purchase:400,selling:799,mrp:1299,tax:5,stock:3,minStock:4,status:'Active',supplier:'Levis India',desc:'Cotton crew neck'},
-      {id:'p4',name:'Denim Jeans',sku:'DJ-201',barcode:'8901004',category:'Jeans',brand:'Levis',size:'32',color:'Dark Blue',purchase:1100,selling:1899,mrp:2999,tax:12,stock:7,minStock:3,status:'Active',supplier:'Levis India',desc:'Slim fit stretch'},
-      {id:'p5',name:'Blazer',sku:'BL-301',barcode:'8901005',category:'Blazers',brand:'Raymond',size:'40',color:'Navy',purchase:2400,selling:3499,mrp:5999,tax:12,stock:2,minStock:3,status:'Active',supplier:'Raymond Ltd',desc:'Slim fit wool blend'},
-      {id:'p6',name:'Track Pants',sku:'TP-401',barcode:'8901006',category:'Track Pants',brand:'Adidas',size:'L',color:'Grey',purchase:500,selling:999,mrp:1599,tax:5,stock:15,minStock:5,status:'Active',supplier:'Adidas',desc:'Activewear'},
-    ];
-    const customers = [
-      {id:'c1',name:'Rahul Sharma',mobile:'9876543210',email:'rahul@example.com',address:'Andheri, Mumbai',gst:'',createdAt:new Date().toISOString()},
-      {id:'c2',name:'Priya Mehta',mobile:'9812345678',email:'priya@example.com',address:'Bandra, Mumbai',gst:'27XYZAB5678G1Z9',createdAt:new Date().toISOString()},
-    ];
-    const invoices = [
-      {id:'INV-0001',date:dateStr(d),time:'10:30',customerId:'c1',customerName:'Rahul Sharma',items:[{productId:'p1',name:'Formal Shirt',size:'M',color:'Blue',price:1299,qty:1,tax:5}],subtotal:1299,discount:0,tax:65,total:1364,payment:'Cash',paid:1364,balance:0,user:'admin',createdAt:new Date().toISOString()},
-      {id:'INV-0002',date:dateStr(d),time:'11:15',customerId:'c2',customerName:'Priya Mehta',items:[{productId:'p4',name:'Denim Jeans',size:'32',color:'Dark Blue',price:1899,qty:1,tax:12}],subtotal:1899,discount:0,tax:228,total:2127,payment:'UPI',paid:2127,balance:0,user:'admin',createdAt:new Date().toISOString()},
-    ];
-    const users = [
-      {id:'u1',username:'admin',password:'admin123',name:'Admin',role:'Admin',status:'Active'},
-      {id:'u2',username:'manager',password:'mgr123',name:'Store Manager',role:'Manager',status:'Active'},
-      {id:'u3',username:'cashier',password:'bill123',name:'Billing Staff',role:'Cashier',status:'Active'},
-    ];
+  async updateProduct(id, p) {
+    return await supabase.from('products').update({
+      name: p.name, sku: p.sku, barcode: p.barcode, category: p.category,
+      brand: p.brand, size: p.size, color: p.color,
+      purchase: p.purchase, selling: p.selling, mrp: p.mrp, tax: p.tax,
+      stock: p.stock, min_stock: p.minStock, status: p.status,
+      supplier: p.supplier, description: p.desc, updated_at: new Date().toISOString()
+    }).eq('id', id);
+  },
+  async deleteProduct(id) {
+    return await supabase.from('products').delete().eq('id', id);
+  },
+
+  async addCustomer(c) { return await supabase.from('customers').insert(c).select().single(); },
+  async updateCustomer(id, c) { return await supabase.from('customers').update(c).eq('id', id); },
+  async deleteCustomer(id) { return await supabase.from('customers').delete().eq('id', id); },
+
+  async addInvoice(inv) {
+    const { data: { user } } = await supabase.auth.getUser();
+    return await supabase.from('invoices').insert({
+      invoice_no: inv.id, date: inv.date, time: inv.time,
+      customer_id: inv.customerId || null, customer_name: inv.customerName,
+      items: inv.items, subtotal: inv.subtotal, discount: inv.discount,
+      tax: inv.tax, total: inv.total, payment: inv.payment,
+      paid: inv.paid, balance: inv.balance,
+      user_id: user ? user.id : null
+    }).select().single();
+  },
+  async deleteInvoice(invoiceNo) {
+    return await supabase.from('invoices').delete().eq('invoice_no', invoiceNo);
+  },
+
+  async addStockEntry(entry) {
+    const { data: { user } } = await supabase.auth.getUser();
+    return await supabase.from('stock_history').insert({
+      product_id: entry.productId, name: entry.name, type: entry.type,
+      qty: entry.qty, note: entry.note, user_id: user ? user.id : null
+    });
+  },
+
+  async updateSettings(s) {
+    return await supabase.from('store_settings').update({
+      store_name: s.storeName, phone: s.phone, gst: s.gst, email: s.email,
+      address: s.address, tax: s.tax, currency: s.currency,
+      invoice_prefix: s.prefix, terms: s.terms,
+      updated_at: new Date().toISOString()
+    }).eq('id', 1);
+  },
+
+  async login(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error };
+    const { data: roleData } = await supabase
+      .from('user_roles').select('*').eq('user_id', data.user.id).single();
     return {
-      products, customers, invoices, users,
-      categories: DEFAULT_CATEGORIES.slice(),
-      settings: {...DEFAULT_SETTINGS},
-      stockHistory: [],
-      invoiceCounter: 3,
-      version: 1
+      user: {
+        id: data.user.id, email: data.user.email,
+        username: roleData?.username || data.user.email,
+        name: roleData?.name || 'User',
+        role: roleData?.role || 'Cashier',
+        status: roleData?.status || 'Active'
+      }
     };
-  }
+  },
+  async logout() { await supabase.auth.signOut(); }
 };
 
 /* ============================================================
    STATE
    ============================================================ */
 const state = {
-  user:null,
-  currentView:'dashboard',
-  cart:[],
-  editingProductId:null,
-  editingCustomerId:null,
-  confirmCallback:null,
-  lastReceipt:null
+  user: null,
+  currentView: 'dashboard',
+  cart: [],
+  editingProductId: null,
+  editingCustomerId: null,
+  confirmCallback: null,
+  lastReceipt: null
 };
 
 /* ============================================================
@@ -818,31 +867,51 @@ $('#btnLogin').addEventListener('click', doLogin);
 $('#inPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 $('#inUser').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#inPass').focus(); });
 
-function doLogin(){
-  const u = $('#inUser').value.trim();
-  const p = $('#inPass').value.trim();
+async function doLogin(){
+  const email = $('#inUser').value.trim();
+  const password = $('#inPass').value.trim();
   const err = $('#loginErr');
+  const btn = $('#btnLogin');
 
-  if(!u || !p){
+  if(!email || !password){
     err.classList.add('show');
-    $('#loginErrMsg').textContent = 'Please enter username and password';
+    $('#loginErrMsg').textContent = 'Please enter email and password';
     return;
   }
-  const user = DB._data.users.find(x=>x.username===u && x.password===p && x.status==='Active');
-  if(!user){
+
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+  btn.disabled = true;
+
+  const result = await DB.login(email, password);
+
+  btn.innerHTML = originalHTML;
+  btn.disabled = false;
+
+  if(result.error){
     err.classList.add('show');
-    $('#loginErrMsg').textContent = 'Invalid username or password';
+    $('#loginErrMsg').textContent = 'Invalid email or password';
     return;
   }
+
+  state.user = result.user;
+
+  const loadResult = await DB.load();
+  if(!loadResult.success){
+    err.classList.add('show');
+    $('#loginErrMsg').textContent = 'Failed to load data. Check connection.';
+    return;
+  }
+
   err.classList.remove('show');
-  state.user = user;
   $('#loginWrap').style.display = 'none';
   $('#app').classList.add('on');
   initApp();
 }
 
 $('#btnLogout').addEventListener('click', ()=>{
-  confirmAction('Are you sure you want to sign out?', ()=>{
+  confirmAction('Are you sure you want to sign out?', async ()=>{
+    await DB.logout();
     state.user = null;
     state.cart = [];
     $('#app').classList.remove('on');
@@ -949,7 +1018,6 @@ function renderDashboard(){
   $('#stLow').textContent = low.length;
   $('#stProd').textContent = d.products.filter(p=>p.status==='Active').length;
 
-  // Chart
   const chart = $('#chart'); chart.innerHTML = '';
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const vals = [];
@@ -968,7 +1036,6 @@ function renderDashboard(){
     chart.appendChild(w);
   });
 
-  // Low stock
   const ls = $('#lowStockList');
   if(low.length===0){
     ls.innerHTML = '<div class="empty" style="padding:20px"><i class="fas fa-check-circle" style="color:var(--success)"></i><p>All products are well stocked</p></div>';
@@ -980,7 +1047,6 @@ function renderDashboard(){
       </div>`).join('');
   }
 
-  // Recent invoices
   const recent = [...d.invoices].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,6);
   const ri = $('#recentInvList');
   if(recent.length===0){
@@ -994,7 +1060,6 @@ function renderDashboard(){
   }
   $('#invCount').textContent = d.invoices.length;
 
-  // Top sellers
   const sales = {};
   d.invoices.forEach(inv=>{
     inv.items.forEach(it=>{
@@ -1104,7 +1169,7 @@ function openProductModal(id){
   openModal('modalProduct');
 }
 
-$('#btnSaveP').addEventListener('click', ()=>{
+$('#btnSaveP').addEventListener('click', async ()=>{
   const id = $('#pId').value;
   const data = {
     name: $('#pName').value.trim(),
@@ -1127,57 +1192,37 @@ $('#btnSaveP').addEventListener('click', ()=>{
 
   let valid = true;
   const setErr = (elId, errId, cond)=>{ if(cond){ valid=false; $('#'+elId).classList.add('err'); $('#'+errId).classList.add('on'); } else { $('#'+elId).classList.remove('err'); $('#'+errId).classList.remove('on'); } };
-
   setErr('pName','e-pName', !data.name);
-  setErr('pSku','e-pSku', !data.sku || DB._data.products.some(p=>p.sku===data.sku && p.id!==id));
+  setErr('pSku','e-pSku', !data.sku);
   setErr('pSize','e-pSize', !data.size);
   setErr('pColor','e-pColor', !data.color);
   setErr('pPurchase','e-pPurchase', isNaN(data.purchase) || data.purchase<0);
   setErr('pSelling','e-pSelling', isNaN(data.selling) || data.selling<=0);
   setErr('pTax','e-pTax', isNaN(data.tax) || data.tax<0);
   setErr('pStock','e-pStock', isNaN(data.stock) || data.stock<0);
-
   if(!valid){ toast('Please fix the errors', 'err'); return; }
 
-  if(id){
-    const p = DB._data.products.find(x=>x.id===id);
-    const diff = data.stock - p.stock;
-    Object.assign(p, data);
-    if(diff!==0){
-      DB._data.stockHistory.push({
-        id:uid('sh'), date:new Date().toISOString(), productId:id, name:data.name,
-        type: diff>0?'in':'out', qty:Math.abs(diff), note:'Product edited', user:state.user.username
-      });
-    }
-    toast('Product updated');
-  } else {
-    const newP = {...data, id:uid('p')};
-    DB._data.products.push(newP);
-    if(data.stock>0){
-      DB._data.stockHistory.push({
-        id:uid('sh'), date:new Date().toISOString(), productId:newP.id, name:data.name,
-        type:'in', qty:data.stock, note:'Opening stock', user:state.user.username
-      });
-    }
-    toast('Product added');
-  }
-  DB.save();
+  let res;
+  if(id){ res = await DB.updateProduct(id, data); }
+  else { res = await DB.addProduct(data); }
+
+  if(res.error){ toast('Save failed: ' + res.error.message, 'err'); return; }
+
+  toast(id ? 'Product updated' : 'Product added');
   closeModal('modalProduct');
-  renderProducts(); renderDashboard(); renderInventory(); populateProductSelect();
+  await DB.load();
+  refreshAll();
 });
 
 window.deleteProduct = id=>{
   const p = DB._data.products.find(x=>x.id===id);
   if(!p) return;
-  confirmAction(`Delete product "${p.name}" (${p.sku})? This will hide it from active listings.`, ()=>{
-    p.status = 'Inactive';
-    DB._data.stockHistory.push({
-      id:uid('sh'), date:new Date().toISOString(), productId:id, name:p.name,
-      type:'out', qty:0, note:'Product marked Inactive', user:state.user.username
-    });
-    DB.save();
-    renderProducts(); renderDashboard(); renderInventory();
-    toast('Product archived', 'warn');
+  confirmAction(`Delete product "${p.name}" (${p.sku})?`, async ()=>{
+    const res = await DB.deleteProduct(id);
+    if(res.error){ toast('Delete failed', 'err'); return; }
+    toast('Product deleted', 'warn');
+    await DB.load();
+    refreshAll();
   });
 };
 
@@ -1266,7 +1311,7 @@ $$('#invTabs .tab').forEach(t=>{
   });
 });
 
-$('#btnAdjust').addEventListener('click', ()=>{
+$('#btnAdjust').addEventListener('click', async ()=>{
   const pid = $('#adjProduct').value;
   const type = $('#adjType').value;
   const qty = parseInt($('#adjQty').value);
@@ -1278,19 +1323,24 @@ $('#btnAdjust').addEventListener('click', ()=>{
   const p = DB._data.products.find(x=>x.id===pid);
   if(!p) return;
 
+  let newStock = p.stock;
   if(type==='out' || type==='damage'){
     if(qty > p.stock) return toast(`Only ${p.stock} in stock`, 'err');
-    p.stock -= qty;
+    newStock = p.stock - qty;
   } else {
-    p.stock += qty;
+    newStock = p.stock + qty;
   }
 
-  DB._data.stockHistory.push({
-    id:uid('sh'), date:new Date().toISOString(), productId:pid, name:p.name,
-    type, qty, note: note || defaultNote(type), user:state.user.username
+  const updRes = await DB.updateProduct(pid, {...p, stock: newStock});
+  if(updRes.error){ toast('Update failed: ' + updRes.error.message, 'err'); return; }
+
+  await DB.addStockEntry({
+    productId: pid, name: p.name, type, qty,
+    note: note || defaultNote(type)
   });
-  DB.save();
+
   $('#adjQty').value = 1; $('#adjNote').value = '';
+  await DB.load();
   renderInventory(); renderDashboard(); renderProducts();
   toast('Stock adjusted');
 });
@@ -1355,7 +1405,7 @@ function openCustomerModal(id){
   openModal('modalCustomer');
 }
 
-$('#btnSaveC').addEventListener('click', ()=>{
+$('#btnSaveC').addEventListener('click', async ()=>{
   const id = $('#cId').value;
   const data = {
     name: $('#cName').value.trim(),
@@ -1370,17 +1420,16 @@ $('#btnSaveC').addEventListener('click', ()=>{
   setErr('cMobile','e-cMobile', !/^\d{10}$/.test(data.mobile));
   if(!valid) return toast('Please fix the errors', 'err');
 
-  if(id){
-    const c = DB._data.customers.find(x=>x.id===id);
-    Object.assign(c, data);
-    toast('Customer updated');
-  } else {
-    DB._data.customers.push({...data, id:uid('c'), createdAt:new Date().toISOString()});
-    toast('Customer added');
-  }
-  DB.save();
+  let res;
+  if(id){ res = await DB.updateCustomer(id, data); }
+  else { res = await DB.addCustomer(data); }
+
+  if(res.error){ toast('Save failed: ' + res.error.message, 'err'); return; }
+
+  toast(id ? 'Customer updated' : 'Customer added');
   closeModal('modalCustomer');
-  renderCustomers(); populateCustomerSelect();
+  await DB.load();
+  refreshAll();
 });
 
 window.deleteCustomer = id=>{
@@ -1388,11 +1437,12 @@ window.deleteCustomer = id=>{
   if(!c) return;
   const hasInvs = DB._data.invoices.some(i=>i.customerId===id);
   if(hasInvs) return toast('Cannot delete: customer has invoices', 'err');
-  confirmAction(`Delete customer "${c.name}"?`, ()=>{
-    DB._data.customers = DB._data.customers.filter(x=>x.id!==id);
-    DB.save();
-    renderCustomers(); populateCustomerSelect();
+  confirmAction(`Delete customer "${c.name}"?`, async ()=>{
+    const res = await DB.deleteCustomer(id);
+    if(res.error){ toast('Delete failed', 'err'); return; }
     toast('Customer deleted', 'warn');
+    await DB.load();
+    refreshAll();
   });
 };
 
@@ -1533,7 +1583,7 @@ $('#btnClearCart').addEventListener('click', ()=>{
   });
 });
 
-$('#btnPay').addEventListener('click', ()=>{
+$('#btnPay').addEventListener('click', async ()=>{
   if(state.cart.length===0) return toast('Cart is empty', 'err');
   const customerId = $('#posCustomer').value;
   const customer = customerId ? DB._data.customers.find(c=>c.id===customerId) : null;
@@ -1551,13 +1601,10 @@ $('#btnPay').addEventListener('click', ()=>{
     id,
     date: now.toISOString().slice(0,10),
     time: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0'),
-    customerId: customer?customer.id:'',
+    customerId: customer?customer.id:null,
     customerName: customer?customer.name:'Walk-in Customer',
     items: state.cart.map(x=>({...x})),
-    subtotal: sub,
-    discount: billDisc,
-    tax,
-    total,
+    subtotal: sub, discount: billDisc, tax, total,
     payment: payMethod,
     paid: payMethod==='Credit'?0:total,
     balance: payMethod==='Credit'?total:0,
@@ -1565,27 +1612,27 @@ $('#btnPay').addEventListener('click', ()=>{
     createdAt: now.toISOString()
   };
 
-  inv.items.forEach(it=>{
+  const invRes = await DB.addInvoice(inv);
+  if(invRes.error){ toast('Failed to save invoice: ' + invRes.error.message, 'err'); return; }
+
+  for(const it of inv.items){
     const p = DB._data.products.find(x=>x.id===it.productId);
     if(p){
-      p.stock -= it.qty;
-      DB._data.stockHistory.push({
-        id:uid('sh'), date:now.toISOString(), productId:p.id, name:p.name,
-        type:'out', qty:it.qty, note:'Sold via '+id, user:state.user.username
+      await DB.updateProduct(p.id, {...p, stock: p.stock - it.qty});
+      await DB.addStockEntry({
+        productId: p.id, name: p.name,
+        type:'out', qty: it.qty, note:'Sold via '+inv.id
       });
     }
-  });
-
-  DB._data.invoices.push(inv);
-  DB._data.invoiceCounter++;
-  DB.save();
+  }
 
   state.lastReceipt = inv;
   state.cart = [];
   $('#posBillDisc').value = 0;
 
-  renderPOS(); renderDashboard(); renderProducts(); renderInventory(); populateProductSelect();
-  toast(`Invoice ${id} saved — ${fmt(total)}`);
+  await DB.load();
+  refreshAll();
+  toast(`Invoice ${inv.id} saved — ${fmt(total)}`);
   showReceipt(inv);
 });
 
@@ -1780,17 +1827,17 @@ window.printInvoice = id=>{
 };
 
 window.deleteInvoice = id=>{
-  confirmAction(`Delete invoice ${id}? This will restore stock to inventory.`, ()=>{
-    const idx = DB._data.invoices.findIndex(i=>i.id===id);
-    if(idx<0) return;
-    const inv = DB._data.invoices[idx];
-    inv.items.forEach(it=>{
+  confirmAction(`Delete invoice ${id}? This will restore stock to inventory.`, async ()=>{
+    const inv = DB._data.invoices.find(i=>i.id===id);
+    if(!inv) return;
+    for(const it of inv.items){
       const p = DB._data.products.find(x=>x.id===it.productId);
-      if(p) p.stock += it.qty;
-    });
-    DB._data.invoices.splice(idx,1);
-    DB.save();
-    renderInvoices(); renderDashboard(); renderProducts(); renderInventory(); populateProductSelect();
+      if(p) await DB.updateProduct(p.id, {...p, stock: p.stock + it.qty});
+    }
+    const res = await DB.deleteInvoice(id);
+    if(res.error){ toast('Delete failed', 'err'); return; }
+    await DB.load();
+    refreshAll();
     toast('Invoice deleted, stock restored', 'warn');
   });
 };
@@ -1834,7 +1881,6 @@ function runReport(type){
           invs.map(i=>`<tr><td><b>${i.id}</b></td><td>${i.date} ${i.time}</td><td>${esc(i.customerName)}</td><td>${i.items.length}</td><td><span class="badge b-blue">${i.payment}</span></td><td style="text-align:right"><b>${fmt(i.total)}</b></td></tr>`).join('')}
         </tbody></table></div>`;
   }
-
   else if(currentReport==='gst'){
     const gstMap = {};
     invs.forEach(inv=>{
@@ -1855,7 +1901,6 @@ function runReport(type){
           Object.entries(gstMap).map(([k,v])=>`<tr><td><b>${k}</b></td><td style="text-align:right">${fmt(v.taxable)}</td><td style="text-align:right">${fmt(v.tax)}</td><td style="text-align:right"><b>${fmt(v.gross)}</b></td></tr>`).join('')}
         </tbody></table></div>`;
   }
-
   else if(currentReport==='stock'){
     const list = d.products.filter(p=>p.status==='Active');
     const totalValue = list.reduce((s,p)=>s+p.stock*p.purchase,0);
@@ -1875,7 +1920,6 @@ function runReport(type){
         </tr>`).join('')}</tbody>
       </table></div>`;
   }
-
   else if(currentReport==='profit'){
     let revenue=0, cost=0;
     invs.forEach(inv=>{
@@ -1943,14 +1987,10 @@ function renderSettings(){
       <td>${esc(u.name)}</td>
       <td><span class="badge ${u.role==='Admin'?'b-blue':u.role==='Manager'?'b-yellow':'b-gray'}">${u.role}</span></td>
       <td><span class="badge ${u.status==='Active'?'b-green':'b-red'}">${u.status}</span></td>
-      <td><div class="tbl-actions">
-        <button class="btn btn-o btn-ic" onclick="editUser('${u.id}')"><i class="fas fa-pen"></i></button>
-        ${u.username!=='admin'?`<button class="btn btn-d btn-ic" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>`:''}
-      </div></td>
     </tr>`).join('');
 }
 
-$('#btnSaveStore').addEventListener('click', ()=>{
+$('#btnSaveStore').addEventListener('click', async ()=>{
   const s = DB._data.settings;
   s.storeName = $('#setName').value.trim() || s.storeName;
   s.phone = $('#setPhone').value.trim();
@@ -1961,52 +2001,14 @@ $('#btnSaveStore').addEventListener('click', ()=>{
   s.currency = $('#setCur').value.trim() || '₹';
   s.prefix = $('#setPrefix').value.trim() || 'INV-';
   s.terms = $('#setTerms').value.trim();
-  DB.save();
+
+  const res = await DB.updateSettings(s);
+  if(res.error){ toast('Save failed: ' + res.error.message, 'err'); return; }
+
   $('#sbStoreName').textContent = s.storeName;
   $('#loginStoreName').textContent = s.storeName;
   toast('Settings saved');
 });
-
-$('#btnAddU').addEventListener('click', ()=>{
-  const username = prompt('Username:');
-  if(!username) return;
-  const name = prompt('Full name:') || username;
-  const password = prompt('Password (min 4 chars):');
-  if(!password || password.length<4) return toast('Password too short', 'err');
-  const role = prompt('Role (Admin/Manager/Cashier):', 'Cashier') || 'Cashier';
-  if(DB._data.users.some(u=>u.username===username)) return toast('Username already exists', 'err');
-  DB._data.users.push({id:uid('u'), username, name, password, role, status:'Active'});
-  DB.save();
-  renderSettings();
-  toast('User added');
-});
-
-window.editUser = id=>{
-  const u = DB._data.users.find(x=>x.id===id);
-  if(!u) return;
-  const name = prompt('Full name:', u.name); if(name===null) return;
-  const role = prompt('Role (Admin/Manager/Cashier):', u.role); if(role===null) return;
-  const status = prompt('Status (Active/Inactive):', u.status); if(status===null) return;
-  if(name) u.name = name;
-  if(role) u.role = role;
-  if(status) u.status = status;
-  const pwd = prompt('New password (leave blank to keep):', '');
-  if(pwd && pwd.length>=4) u.password = pwd;
-  DB.save();
-  renderSettings();
-  toast('User updated');
-};
-
-window.deleteUser = id=>{
-  const u = DB._data.users.find(x=>x.id===id);
-  if(!u) return;
-  confirmAction(`Delete user "${u.username}"?`, ()=>{
-    DB._data.users = DB._data.users.filter(x=>x.id!==id);
-    DB.save();
-    renderSettings();
-    toast('User deleted', 'warn');
-  });
-};
 
 $$('#setTabs .tab').forEach(t=>{
   t.addEventListener('click', ()=>{
@@ -2017,9 +2019,6 @@ $$('#setTabs .tab').forEach(t=>{
   });
 });
 
-/* ============================================================
-   BACKUP / RESTORE
-   ============================================================ */
 $('#btnBackup').addEventListener('click', ()=>{
   const data = JSON.stringify(DB._data, null, 2);
   const blob = new Blob([data], {type:'application/json'});
@@ -2030,37 +2029,6 @@ $('#btnBackup').addEventListener('click', ()=>{
   a.click();
   URL.revokeObjectURL(url);
   toast('Backup downloaded');
-});
-
-$('#btnRestore').addEventListener('click', ()=>{
-  const f = $('#restoreFile').files[0];
-  if(!f) return toast('Select a backup file', 'err');
-  const r = new FileReader();
-  r.onload = ()=>{
-    try{
-      const data = JSON.parse(r.result);
-      if(!data.products || !data.settings) throw new Error('Invalid file');
-      confirmAction('Restore backup? This will overwrite all current data.', ()=>{
-        DB._data = data;
-        DB.save();
-        refreshAll();
-        toast('Backup restored');
-      });
-    }catch(e){
-      toast('Invalid backup file', 'err');
-    }
-  };
-  r.readAsText(f);
-});
-
-$('#btnResetAll').addEventListener('click', ()=>{
-  confirmAction('Reset ALL data to factory defaults? This cannot be undone.', ()=>{
-    localStorage.removeItem(DB.key);
-    DB._data = null;
-    DB.load();
-    refreshAll();
-    toast('Data reset', 'warn');
-  });
 });
 
 /* ============================================================
@@ -2078,13 +2046,6 @@ $('#globalSearch').addEventListener('keydown', e=>{
   if(c){ switchView('customers'); $('#cSearch').value = q; renderCustomers(); return; }
   toast('No results found', 'warn');
 });
-
-/* ============================================================
-   INIT
-   ============================================================ */
-DB.load();
-$('#inUser').value = 'admin';
-$('#inPass').value = 'admin123';
 </script>
 </body>
 </html>
