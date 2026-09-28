@@ -874,6 +874,8 @@ async function doLogin(){
   const err = $('#loginErr');
   const btn = $('#btnLogin');
 
+  console.log('🔐 Login attempt:', email);
+
   if(!email || !password){
     err.classList.add('show');
     $('#loginErrMsg').textContent = 'Please enter email and password';
@@ -884,30 +886,52 @@ async function doLogin(){
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
   btn.disabled = true;
 
-  const result = await DB.login(email, password);
+  try {
+    // STEP 1 — Sign in
+    console.log('STEP 1: Calling DB.login...');
+    const result = await DB.login(email, password);
+    console.log('STEP 1 result:', result);
 
-  btn.innerHTML = originalHTML;
-  btn.disabled = false;
+    if(result.error){
+      console.error('Login error:', result.error);
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+      err.classList.add('show');
+      $('#loginErrMsg').textContent = result.error.message || 'Invalid email or password';
+      return;
+    }
 
-  if(result.error){
+    state.user = result.user;
+    console.log('STEP 2: Login success. User:', state.user);
+
+    // STEP 2 — Load data
+    console.log('STEP 3: Loading data from Supabase...');
+    const loadResult = await DB.load();
+    console.log('STEP 3 result:', loadResult);
+
+    if(!loadResult.success){
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+      err.classList.add('show');
+      $('#loginErrMsg').textContent = 'Failed to load data: ' + (loadResult.error || 'unknown');
+      return;
+    }
+
+    // STEP 3 — Enter app
+    console.log('STEP 4: Entering app...');
+    err.classList.remove('show');
+    $('#loginWrap').style.display = 'none';
+    $('#app').classList.add('on');
+    initApp();
+    console.log('✅ Login complete!');
+  } catch (e) {
+    console.error('❌ LOGIN EXCEPTION:', e);
+    console.error('Stack:', e.stack);
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
     err.classList.add('show');
-    $('#loginErrMsg').textContent = 'Invalid email or password';
-    return;
+    $('#loginErrMsg').textContent = 'Login error: ' + e.message;
   }
-
-  state.user = result.user;
-
-  const loadResult = await DB.load();
-  if(!loadResult.success){
-    err.classList.add('show');
-    $('#loginErrMsg').textContent = 'Failed to load data. Check connection.';
-    return;
-  }
-
-  err.classList.remove('show');
-  $('#loginWrap').style.display = 'none';
-  $('#app').classList.add('on');
-  initApp();
 }
 
 $('#btnLogout').addEventListener('click', ()=>{
