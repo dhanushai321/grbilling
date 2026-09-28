@@ -641,6 +641,7 @@
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span>Saved</span></div>
 
 <script>
+(function(){
 /* ============================================================
    SUPABASE CONFIG
    ============================================================ */
@@ -2046,6 +2047,7 @@ $('#globalSearch').addEventListener('keydown', e=>{
   if(c){ switchView('customers'); $('#cSearch').value = q; renderCustomers(); return; }
   toast('No results found', 'warn');
 });
+})();
 </script>
 </body>
 </html>
