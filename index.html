@@ -941,12 +941,19 @@ $('#btnLogout').addEventListener('click', ()=>{
     state.cart = [];
     $('#app').classList.remove('on');
     $('#loginWrap').style.display = 'flex';
+
+    // Reset login form
     $('#inUser').value = '';
     $('#inPass').value = '';
     $('#loginErr').classList.remove('show');
+
+    // ⭐ Reset the Sign In button to its original state
+    const btn = $('#btnLogin');
+    btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Sign In';
+    btn.disabled = false;
   });
 });
-
+ 
 function initApp(){
   const initials = state.user.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
   $('#tbAv').textContent = initials;
