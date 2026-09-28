@@ -647,7 +647,7 @@
    ============================================================ */
 const SUPABASE_URL = 'https://naafnqbfarspbmhdjnkn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hYWZucWJmYXJzcGJtaGRqbmtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMjg3MDMsImV4cCI6MjEwNTkwNDcwM30.fIqqUeCN45xe9KzZunEtrsMCHSEC6voKWz3VKnQZqsI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ============================================================
    DB LAYER — Supabase (Shared Store)
@@ -666,12 +666,12 @@ const DB = {
   async load() {
     try {
       const [products, customers, invoices, stockHistory, settings, roles] = await Promise.all([
-        supabase.from('products').select('*').order('created_at', { ascending: false }),
-        supabase.from('customers').select('*').order('created_at', { ascending: false }),
-        supabase.from('invoices').select('*').order('created_at', { ascending: false }),
-        supabase.from('stock_history').select('*').order('created_at', { ascending: false }).limit(500),
-        supabase.from('store_settings').select('*').eq('id', 1).single(),
-        supabase.from('user_roles').select('*')
+        sbClient.from('products').select('*').order('created_at', { ascending: false }),
+        sbClient.from('customers').select('*').order('created_at', { ascending: false }),
+        sbClient.from('invoices').select('*').order('created_at', { ascending: false }),
+        sbClient.from('stock_history').select('*').order('created_at', { ascending: false }).limit(500),
+        sbClient.from('store_settings').select('*').eq('id', 1).single(),
+        sbClient.from('user_roles').select('*')
       ]);
 
       if (products.error) throw products.error;
@@ -734,7 +734,7 @@ const DB = {
   save() {},
 
   async addProduct(p) {
-    return await supabase.from('products').insert({
+    return await sbClient.from('products').insert({
       name: p.name, sku: p.sku, barcode: p.barcode, category: p.category,
       brand: p.brand, size: p.size, color: p.color,
       purchase: p.purchase, selling: p.selling, mrp: p.mrp, tax: p.tax,
@@ -743,7 +743,7 @@ const DB = {
     }).select().single();
   },
   async updateProduct(id, p) {
-    return await supabase.from('products').update({
+    return await sbClient.from('products').update({
       name: p.name, sku: p.sku, barcode: p.barcode, category: p.category,
       brand: p.brand, size: p.size, color: p.color,
       purchase: p.purchase, selling: p.selling, mrp: p.mrp, tax: p.tax,
@@ -752,16 +752,16 @@ const DB = {
     }).eq('id', id);
   },
   async deleteProduct(id) {
-    return await supabase.from('products').delete().eq('id', id);
+    return await sbClient.from('products').delete().eq('id', id);
   },
 
-  async addCustomer(c) { return await supabase.from('customers').insert(c).select().single(); },
-  async updateCustomer(id, c) { return await supabase.from('customers').update(c).eq('id', id); },
-  async deleteCustomer(id) { return await supabase.from('customers').delete().eq('id', id); },
+  async addCustomer(c) { return await sbClient.from('customers').insert(c).select().single(); },
+  async updateCustomer(id, c) { return await sbClient.from('customers').update(c).eq('id', id); },
+  async deleteCustomer(id) { return await sbClient.from('customers').delete().eq('id', id); },
 
   async addInvoice(inv) {
-    const { data: { user } } = await supabase.auth.getUser();
-    return await supabase.from('invoices').insert({
+    const { data: { user } } = await sbClient.auth.getUser();
+    return await sbClient.from('invoices').insert({
       invoice_no: inv.id, date: inv.date, time: inv.time,
       customer_id: inv.customerId || null, customer_name: inv.customerName,
       items: inv.items, subtotal: inv.subtotal, discount: inv.discount,
@@ -771,19 +771,19 @@ const DB = {
     }).select().single();
   },
   async deleteInvoice(invoiceNo) {
-    return await supabase.from('invoices').delete().eq('invoice_no', invoiceNo);
+    return await sbClient.from('invoices').delete().eq('invoice_no', invoiceNo);
   },
 
   async addStockEntry(entry) {
-    const { data: { user } } = await supabase.auth.getUser();
-    return await supabase.from('stock_history').insert({
+    const { data: { user } } = await sbClient.auth.getUser();
+    return await sbClient.from('stock_history').insert({
       product_id: entry.productId, name: entry.name, type: entry.type,
       qty: entry.qty, note: entry.note, user_id: user ? user.id : null
     });
   },
 
   async updateSettings(s) {
-    return await supabase.from('store_settings').update({
+    return await sbClient.from('store_settings').update({
       store_name: s.storeName, phone: s.phone, gst: s.gst, email: s.email,
       address: s.address, tax: s.tax, currency: s.currency,
       invoice_prefix: s.prefix, terms: s.terms,
@@ -792,7 +792,7 @@ const DB = {
   },
 
   async login(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
     if (error) return { error };
     const { data: roleData } = await supabase
       .from('user_roles').select('*').eq('user_id', data.user.id).single();
@@ -806,7 +806,7 @@ const DB = {
       }
     };
   },
-  async logout() { await supabase.auth.signOut(); }
+  async logout() { await sbClient.auth.signOut(); }
 };
 
 /* ============================================================
